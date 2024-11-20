@@ -113,7 +113,7 @@ internal class ARTurnIn : Tweak<ARTurnInConfiguration>
     // bless lifestream for doing literally all the annoying work for me already
     private void GoToGC() => TaskManager.InsertMulti([new(() => P.Lifestream.ExecuteCommand("gc")), new(() => P.Lifestream.IsBusy()), new(() => !P.Lifestream.IsBusy(), LSConfig)]);
     private void Deliveroo() => TaskManager.InsertMulti([new(() => Svc.Commands.ProcessCommand("/deliveroo enable")), new(() => P.Deliveroo.IsTurnInRunning()), new(() => !P.Deliveroo.IsTurnInRunning(), DConfig)]);
-    private void GoHome() => TaskManager.InsertMulti([new(P.Lifestream.TeleportToFC), new(() => P.Lifestream.IsBusy()), new(() => !P.Lifestream.IsBusy(), LSConfig)]);
+    private void GoHome() => TaskManager.InsertMulti([new(() => P.Lifestream.ExecuteCommand("auto")), new(() => P.Lifestream.IsBusy()), new(() => !P.Lifestream.IsBusy(), LSConfig)]);
 
     private TaskManagerConfiguration LSConfig => new(timeLimitMS: 2 * 60 * 1000);
     private TaskManagerConfiguration DConfig => new(timeLimitMS: 10 * 60 * 1000, abortOnTimeout: false);
