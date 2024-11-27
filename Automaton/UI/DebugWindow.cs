@@ -4,10 +4,9 @@ using ECommons.Automation;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Automaton.UI;
 
@@ -31,6 +30,24 @@ internal class DebugWindow : Window
     private int[] ecParams = new int[4];
     private int[] eccParams = new int[4];
     private readonly Memory.ExecuteCommands executeCommands = new();
+
+    private unsafe List<Pointer<InventoryItem>> Inventory
+    {
+        get
+        {
+            List<Pointer<InventoryItem>> items = [];
+            foreach (var inv in Utilities.Inventory.Equippable)
+            {
+                var cont = InventoryManager.Instance()->GetInventoryContainer(inv);
+                for (var i = 0; i < cont->Size; ++i)
+                    if (cont->GetInventorySlot(i)->ItemId != 0)
+                        items.Add(cont->GetInventorySlot(i));
+            }
+            return items;
+        }
+    }
+    private unsafe List<Pointer<InventoryItem>> FilteredItems => Inventory.Where(x => GetRow<Item>(x.Value->ItemId)?.Name.ExtractText().ToLowerInvariant().Contains(searchFilter.ToLowerInvariant()) ?? false).ToList();
+    private string searchFilter = "";
     public override unsafe void Draw()
     {
         using var tabs = ImRaii.TabBar("tabs");
@@ -70,9 +87,9 @@ internal class DebugWindow : Window
                         const uint nuts = 26533;
                         var nutsAmt = InventoryManager.Instance()->GetInventoryItemCount(nuts);
                         var nutsCost = 25;
-                        var freeslots = InventoryManager.Instance()->GetEmptySlotsInBag() + Inventory.GetEmptySlots([InventoryType.ArmoryRings]);
+                        var freeslots = InventoryManager.Instance()->GetEmptySlotsInBag() + Utilities.Inventory.GetEmptySlots([InventoryType.ArmoryRings]);
                         uint tobuy = (uint)Math.Min(nutsAmt / nutsCost, freeslots);
-                        Svc.Log.Info($"{InventoryManager.Instance()->GetEmptySlotsInBag()} {Inventory.GetEmptySlots([InventoryType.ArmoryRings])} {nutsAmt} {nutsAmt / nutsCost} {tobuy}");
+                        Svc.Log.Info($"{InventoryManager.Instance()->GetEmptySlotsInBag()} {Utilities.Inventory.GetEmptySlots([InventoryType.ArmoryRings])} {nutsAmt} {nutsAmt / nutsCost} {tobuy}");
                         Callback.Fire(addon, true, 0, 49, tobuy);
                     }
                     else
@@ -101,6 +118,23 @@ internal class DebugWindow : Window
                     }
                 }
             }
+        }
+        using (var tabInventorySearch = ImRaii.TabItem("Inventory"))
+        {
+            if (tabInventorySearch)
+            {
+                ImGui.InputText("Filter", ref searchFilter, 256);
+                DrawInventory();
+            }
+        }
+    }
+
+    private unsafe void DrawInventory()
+    {
+        foreach (var item in FilteredItems)
+        {
+            var data = GetRow<Item>(item.Value->ItemId)!;
+            ImGui.TextUnformatted($"[{item.Value->ItemId}] {item.Value->Container} {item.Value->Slot} {data.Value.Name}");
         }
     }
 }
