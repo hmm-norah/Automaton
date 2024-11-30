@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -77,5 +78,14 @@ public static unsafe class PlayerEx
                 return;
             }
         }
+    }
+
+    public static void ResetTimers()
+    {
+        var module = UIModule.Instance()->GetInputTimerModule();
+        module->AfkTimer = 0;
+        module->ContentInputTimer = 0;
+        module->InputTimer = 0;
+        module->Unk1C = 0;
     }
 }
