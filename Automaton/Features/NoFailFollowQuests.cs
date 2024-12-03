@@ -1,6 +1,6 @@
 ﻿namespace Automaton.Features;
 
-[Tweak]
+[Tweak(debug: true)]
 internal class NoFailFollowQuests : Tweak
 {
     public override string Name => "No Fail Follow Quests";
