@@ -109,12 +109,25 @@ internal class WondrousTailsClickToOpen : Tweak
                 switch (bingoOrderData.Unknown1)
                 {
                     // Treasure Maps, nothing to do
-                    case 1:
-                        return [];
+                    case 1: return [];
 
-                    // Frontlines
+                    // PvP
                     case 2:
-                        AgentContentsFinder.Instance()->OpenRouletteDuty(7);
+                        switch (bingoOrderData.RowId)
+                        {
+                            // Crystalline Conflict
+                            case 52:
+                                AgentContentsFinder.Instance()->OpenRouletteDuty(40); // Casual Match
+                                break;
+                            // Frontlines
+                            case 54:
+                                AgentContentsFinder.Instance()->OpenRouletteDuty(7);
+                                break;
+                            // Hidden Gorge
+                            case 56:
+                                AgentContentsFinder.Instance()->OpenRegularDuty(599); // Hidden Gorge
+                                break;
+                        }
                         return [];
 
                     // Deep Dungeons
@@ -124,16 +137,6 @@ internal class WondrousTailsClickToOpen : Tweak
                             .OrderBy(row => row.SortKey)
                             .Select(m => m.TerritoryType.RowId)
                             .ToList();
-
-                    // Rival Wings
-                    case 69: // TODO FIND
-                        AgentContentsFinder.Instance()->OpenRegularDuty(599); // Hidden Gorge
-                        return [];
-
-                    // Crystalline Conflict
-                    case 52:
-                        AgentContentsFinder.Instance()->OpenRouletteDuty(40); // Casual Match
-                        return [];
                 }
                 return [];
 
