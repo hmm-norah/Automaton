@@ -8,7 +8,6 @@ using ECommons.Automation.LegacyTaskManager;
 using ECommons.Configuration;
 using ECommons.SimpleGui;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace Automaton;

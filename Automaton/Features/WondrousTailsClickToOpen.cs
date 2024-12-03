@@ -71,7 +71,7 @@ internal class WondrousTailsClickToOpen : Tweak
         }
     }
 
-    private List<uint> GetInstanceListFromId(uint orderDataId)
+    private unsafe List<uint> GetInstanceListFromId(uint orderDataId)
     {
         var bingoOrderData = GetSheet<WeeklyBingoOrderData>().GetRow(orderDataId);
         Svc.Log.Info($"{nameof(OnDutySlotClick)}: [row={bingoOrderData.RowId}; type={bingoOrderData.Type}; text={bingoOrderData.Text.Value.Description};]");
@@ -105,23 +105,37 @@ internal class WondrousTailsClickToOpen : Tweak
 
             // Special categories
             case 3:
-                return bingoOrderData.Unknown1 switch
+                // handling AgentContentsFinder here is such a hack
+                switch (bingoOrderData.Unknown1)
                 {
-                    // Treasure Map Instances are Not Supported
-                    1 => [],
+                    // Treasure Maps, nothing to do
+                    case 1:
+                        return [];
 
-                    // PvP Categories are Not Supported
-                    2 => [],
+                    // Frontlines
+                    case 2:
+                        AgentContentsFinder.Instance()->OpenRouletteDuty(7);
+                        return [];
 
                     // Deep Dungeons
-                    3 => _sheet
-                        .Where(m => m.ContentType.RowId is 21)
-                        .OrderBy(row => row.SortKey)
-                        .Select(m => m.TerritoryType.RowId)
-                        .ToList(),
+                    case 3:
+                        return _sheet
+                            .Where(m => m.ContentType.RowId is 21)
+                            .OrderBy(row => row.SortKey)
+                            .Select(m => m.TerritoryType.RowId)
+                            .ToList();
 
-                    _ => [],
-                };
+                    // Rival Wings
+                    case 69: // TODO FIND
+                        AgentContentsFinder.Instance()->OpenRegularDuty(599); // Hidden Gorge
+                        return [];
+
+                    // Crystalline Conflict
+                    case 52:
+                        AgentContentsFinder.Instance()->OpenRouletteDuty(40); // Casual Match
+                        return [];
+                }
+                return [];
 
             // Multi-instance raids
             case 4:
