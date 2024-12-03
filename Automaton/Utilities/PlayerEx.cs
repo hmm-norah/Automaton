@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using PlayerController = Automaton.Utilities.Structs.PlayerController;
@@ -87,5 +88,7 @@ public static unsafe class PlayerEx
         module->ContentInputTimer = 0;
         module->InputTimer = 0;
         module->Unk1C = 0;
+        if (Player.OnlineStatus == 17) // away from keyboard
+            Chat.Instance.SendMessage("/afk off"); // TODO: find a better way
     }
 }

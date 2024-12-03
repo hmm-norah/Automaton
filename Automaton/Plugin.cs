@@ -88,7 +88,6 @@ public class Plugin : IDalamudPlugin
     private bool inpvp = false;
     private void EventWatcher(IFramework framework)
     {
-        PlayerEx.ResetTimers();
         if (PlayerEx.InPvP)
         {
             if (!inpvp)
