@@ -1,8 +1,10 @@
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using ECommons.Automation;
+using ECommons.Automation.NeoTaskManager;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
@@ -31,12 +33,12 @@ internal class DebugWindow : Window
     private int[] eccParams = new int[4];
     private readonly Memory.ExecuteCommands executeCommands = new();
 
-    private unsafe List<Pointer<InventoryItem>> Inventory
+    private unsafe List<Pointer<InventoryItem>> InventoryItems
     {
         get
         {
             List<Pointer<InventoryItem>> items = [];
-            foreach (var inv in Utilities.Inventory.Equippable)
+            foreach (var inv in Inventory.Equippable)
             {
                 var cont = InventoryManager.Instance()->GetInventoryContainer(inv);
                 for (var i = 0; i < cont->Size; ++i)
@@ -46,7 +48,7 @@ internal class DebugWindow : Window
             return items;
         }
     }
-    private unsafe List<Pointer<InventoryItem>> FilteredItems => Inventory.Where(x => GetRow<Item>(x.Value->ItemId)?.Name.ExtractText().ToLowerInvariant().Contains(searchFilter.ToLowerInvariant()) ?? false).ToList();
+    private unsafe List<Pointer<InventoryItem>> FilteredItems => InventoryItems.Where(x => GetRow<Item>(x.Value->ItemId)?.Name.ExtractText().ToLowerInvariant().Contains(searchFilter.ToLowerInvariant()) ?? false).ToList();
     private string searchFilter = "";
     public override unsafe void Draw()
     {
@@ -87,9 +89,9 @@ internal class DebugWindow : Window
                         const uint nuts = 26533;
                         var nutsAmt = InventoryManager.Instance()->GetInventoryItemCount(nuts);
                         var nutsCost = 25;
-                        var freeslots = InventoryManager.Instance()->GetEmptySlotsInBag() + Utilities.Inventory.GetEmptySlots([InventoryType.ArmoryRings]);
+                        var freeslots = InventoryManager.Instance()->GetEmptySlotsInBag() + Inventory.GetEmptySlots([InventoryType.ArmoryRings]);
                         uint tobuy = (uint)Math.Min(nutsAmt / nutsCost, freeslots);
-                        Svc.Log.Info($"{InventoryManager.Instance()->GetEmptySlotsInBag()} {Utilities.Inventory.GetEmptySlots([InventoryType.ArmoryRings])} {nutsAmt} {nutsAmt / nutsCost} {tobuy}");
+                        Svc.Log.Info($"{InventoryManager.Instance()->GetEmptySlotsInBag()} {Inventory.GetEmptySlots([InventoryType.ArmoryRings])} {nutsAmt} {nutsAmt / nutsCost} {tobuy}");
                         Callback.Fire(addon, true, 0, 49, tobuy);
                     }
                     else
@@ -97,6 +99,25 @@ internal class DebugWindow : Window
                 }
                 if (ImGui.IsItemHovered()) ImGui.SetTooltip($"Buys the most amount of {GetRow<Item>(34922)?.Name}");
                 cantSpend.ForEach(x => ImGuiEx.Text((uint)Colors.Red, x));
+
+                if (ImGui.Button("Use all items"))
+                {
+                    foreach (var c in Inventory.PlayerInventory)
+                    {
+                        var cont = InventoryManager.Instance()->GetInventoryContainer(c);
+                        for (var i = 0; i < cont->Size; ++i)
+                        {
+                            var slot = cont->GetInventorySlot(i);
+                            var item = GetRow<Item>(slot->ItemId)!;
+                            if (item.Value.ItemSortCategory.Value.Param is 175 or 160)
+                            {
+                                P.TaskManager.Enqueue(() => AgentInventoryContext.Instance()->UseItem(slot->ItemId));
+                                P.TaskManager.Enqueue(() => !Player.IsAnimationLocked && !PlayerEx.Occupied && !PlayerEx.IsCasting);
+                            }
+                            //ActionManager.Instance()->UseAction(ActionType.Item, slot->ItemId);
+                        }
+                    }
+                }
             }
         }
         using (var tabPlayerEx = ImRaii.TabItem($"{nameof(PlayerEx)}"))

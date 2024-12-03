@@ -38,6 +38,8 @@ internal class WondrousTailsClickToOpen : Tweak
         }
     }
 
+    private void OnAddonFinalize(AddonEvent type, AddonArgs args) => ResetEventHandles();
+
     private unsafe void OnDutySlotClick(AddonEventType atkEventType, nint atkUnitBase, nint atkResNode)
     {
         var dutyButtonNode = (AtkResNode*)atkResNode;
@@ -54,8 +56,6 @@ internal class WondrousTailsClickToOpen : Tweak
             AgentContentsFinder.Instance()->OpenRegularDuty(cfc.RowId);
         }
     }
-
-    private void OnAddonFinalize(AddonEvent type, AddonArgs args) => ResetEventHandles();
 
     private readonly IAddonEventHandle?[] eventHandles = new IAddonEventHandle?[16];
     private void ResetEventHandles()

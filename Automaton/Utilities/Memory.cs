@@ -20,6 +20,7 @@ internal unsafe class Memory
         internal const string AbandonDuty = "E8 ?? ?? ?? ?? 48 8B 43 28 41 B2 01";
         internal const string BewitchProc = "40 53 48 83 EC 50 45 33 C0";
         internal const string EnqueueSnipeTask = "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 50 48 8B F1 48 8D 4C 24 ?? E8 ?? ?? ?? ?? 48 8B 4C 24 ??";
+        internal const string FollowQuestRecast = "E8 ?? ?? ?? ?? 48 8B 9C 24 ?? ?? ?? ?? 0F 28 74 24 ?? 0F 28 7C 24 ?? 44 0F 28 44 24 ?? 48 81 C4";
         internal const string ExecuteCommand = "E8 ?? ?? ?? ?? 8D 46 0A"; // st
         internal const string ExecuteCommandComplexLocation = "E8 ?? ?? ?? ?? EB 1E 48 8B 53 08";
         internal const string GetGrandCompanyRank = "E8 ?? ?? ?? ?? 3A 43 01"; // cs
@@ -236,6 +237,16 @@ internal unsafe class Memory
                 return SnipeHook.Original.Invoke(scene, state);
             }
         }
+    }
+    #endregion
+
+    #region Follow Quest Sequences
+    public class FollowQuestRecastCheck : Hook
+    {
+        [EzHook(Signatures.FollowQuestRecast, false)]
+        internal EzHook<FollowQuestRecastDelegate> RecastHook = null!;
+        internal delegate bool FollowQuestRecastDelegate(nint a1, nint a2, nint a3, nint a4, nint a5, nint a6);
+        internal bool RecastDetour(nint a1, nint a2, nint a3, nint a4, nint a5, nint a6) => false;
     }
     #endregion
 
