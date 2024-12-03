@@ -124,7 +124,7 @@ internal class WondrousTailsClickToOpen : Tweak
                                 AgentContentsFinder.Instance()->OpenRouletteDuty(7);
                                 break;
                             // Hidden Gorge
-                            case 56:
+                            case 67:
                                 AgentContentsFinder.Instance()->OpenRegularDuty(599); // Hidden Gorge
                                 break;
                         }
