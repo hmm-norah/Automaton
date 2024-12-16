@@ -123,7 +123,7 @@ internal class WondrousTailsClickToOpen : Tweak
                             case 54:
                                 AgentContentsFinder.Instance()->OpenRouletteDuty(7);
                                 break;
-                            // Hidden Gorge
+                            // Rival Wings
                             case 67:
                                 AgentContentsFinder.Instance()->OpenRegularDuty(599); // Hidden Gorge
                                 break;

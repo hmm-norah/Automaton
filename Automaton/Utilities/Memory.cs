@@ -37,6 +37,8 @@ internal unsafe class Memory
         internal const string ShouldDraw = "E8 ?? ?? ?? ?? 84 C0 75 18 48 8D 0D ?? ?? ?? ?? B3 01";
         internal const string WorldTravel = "40 55 53 56 57 41 54 41 56 41 57 48 8D AC 24 ?? ?? ?? ?? B8";
         internal const string WorldTravelSetupInfo = "48 8B CB E8 ?? ?? ?? ?? 48 8D 8B ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B 05 ?? ?? ?? ??";
+        internal const string InventoryManagerUniqueItemCheck = "E8 ?? ?? ?? ?? 44 8B E0 EB 29";
+        internal const string ItemIsUniqueConditionalJump = "74 5E";
     }
 
     internal unsafe delegate void RidePillionDelegate(BattleChara* target, int seatIndex);
@@ -373,6 +375,32 @@ internal unsafe class Memory
         [EzHook(Signatures.ShouldDraw, false)]
         internal readonly EzHook<ShouldDrawDelegate> ShouldDrawHook = null!;
         internal byte ShouldDrawDetour(CameraBase* thisPtr, GameObject* gameObject, Vector3* sceneCameraPos, Vector3* lookAtVector) => 1;
+    }
+    #endregion
+
+    #region Unique Item Check Bypass
+    public class AllowUniqueItems : Hook
+    {
+        internal delegate long IsItemUniqueDelegate(InventoryManager* ptr, uint a1, uint a2, byte a3);
+        [EzHook(Signatures.InventoryManagerUniqueItemCheck, false)]
+        internal readonly EzHook<IsItemUniqueDelegate> UniqueItemCheckHook = null!;
+        internal long IgnoreUniqueCheckDetour(InventoryManager* ptr, uint a1, uint a2, byte a3)
+        {
+            Svc.Log.Info($"{nameof(IgnoreUniqueCheckDetour)}: [{a1} {a2} {a3}]");
+            return UniqueItemCheckHook.Original(ptr, a1, a2, a3);
+        }
+
+        private byte[] _prePatchData = null!;
+        // 0x90 = no-op
+        internal unsafe void IgnoreUniqueCheck()
+        {
+            Dalamud.SafeMemory.ReadBytes(Svc.SigScanner.ScanModule(Signatures.ItemIsUniqueConditionalJump), 2, out var prePatch);
+            _prePatchData = prePatch;
+            Dalamud.SafeMemory.WriteBytes(Svc.SigScanner.ScanModule(Signatures.ItemIsUniqueConditionalJump), [0x90, 0x90]);
+            //Dalamud.SafeMemory.Write(Svc.SigScanner.ScanText(Signatures.ItemIsUniqueConditionalJump), new byte[] { 0x90, 0x90 });
+        }
+
+        internal unsafe void Reset() => Dalamud.SafeMemory.WriteBytes(Svc.SigScanner.ScanModule(Signatures.ItemIsUniqueConditionalJump), _prePatchData);
     }
     #endregion
 

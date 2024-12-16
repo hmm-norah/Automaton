@@ -50,6 +50,8 @@ internal class DebugWindow : Window
     }
     private unsafe List<Pointer<InventoryItem>> FilteredItems => InventoryItems.Where(x => GetRow<Item>(x.Value->ItemId)?.Name.ExtractText().ToLowerInvariant().Contains(searchFilter.ToLowerInvariant()) ?? false).ToList();
     private string searchFilter = "";
+    private Memory.AllowUniqueItems AllowUniqueItems = new();
+    private bool uniqueHook = false;
     public override unsafe void Draw()
     {
         using var tabs = ImRaii.TabBar("tabs");
@@ -117,6 +119,19 @@ internal class DebugWindow : Window
                             //ActionManager.Instance()->UseAction(ActionType.Item, slot->ItemId);
                         }
                     }
+                }
+
+                if (ImGui.Checkbox("unique item bypass", ref uniqueHook))
+                {
+                    if (uniqueHook)
+                        AllowUniqueItems.IgnoreUniqueCheck();
+                    else
+                        AllowUniqueItems.Reset();
+                }
+
+                if (Dalamud.SafeMemory.ReadBytes(Svc.SigScanner.ScanText(Memory.Signatures.ItemIsUniqueConditionalJump), 2, out var obj))
+                {
+                    ImGui.TextUnformatted($"{BitConverter.ToString(obj)}");
                 }
             }
         }
