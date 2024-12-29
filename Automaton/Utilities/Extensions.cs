@@ -25,7 +25,7 @@ internal static partial class Extensions
     public static bool TryParseVector3(this string input, out Vector3 output)
     {
         output = Vector3.Zero;
-        var pattern = @"(\d+(\.\d+)?),(\d+(\.\d+)?),(\d+(\.\d+)?)";
+        var pattern = @"(-?\d+(\.\d+)?),(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)";
         var match = Regex.Match(input, pattern);
         if (match.Success)
         {

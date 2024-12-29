@@ -2,11 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <Authors>croizat</Authors>
-        <Version>0.0.0.0</Version>
+        <Version>0.0</Version>
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0-windows</TargetFramework>
         <Platforms>x64</Platforms>
         <LangVersion>preview</LangVersion>
         <PluginName>Automaton</PluginName>

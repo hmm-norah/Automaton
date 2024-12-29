@@ -129,10 +129,17 @@ public partial class Commands : Tweak<CommandsConfiguration>
         if (!uint.TryParse(arguments, out var itemId) && arguments != "all") return;
         if (arguments == "all")
         {
+            if (AgentInventoryContext.Instance() == null)
+            {
+                Svc.Log.Warning("AgentInventoryContext is null, cannot lower quality on items");
+                return;
+            }
             foreach (var i in Inventory.GetHQItems(Inventory.PlayerInventory))
             {
+                // TODO: this still sometimes can just cause a crash, idk why
                 Svc.Log.Info($"Lowering quality on item [{i.Value->ItemId}] {GetRow<Item>(i.Value->ItemId)?.Name} in {i.Value->Container} slot {i.Value->Slot}");
-                TaskManager.EnqueueDelay(20);
+                TaskManager.EnqueueDelay(100);
+                TaskManager.Enqueue(() => AgentInventoryContext.Instance() != null);
                 TaskManager.Enqueue(() => AgentInventoryContext.Instance()->LowerItemQuality(i.Value, i.Value->Container, i.Value->Slot, 0));
             }
         }

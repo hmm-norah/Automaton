@@ -15,6 +15,7 @@ namespace Automaton;
 public class Plugin : IDalamudPlugin
 {
     public static string Name => "CBT";
+    public static string VersionString => $"v{P.GetType().Assembly.GetName().Version?.Major}.{P.GetType().Assembly.GetName().Version?.Minor}";
     private const string Command = "/cbt";
     private const string LegacyCommand = "/automaton";
 
@@ -24,15 +25,17 @@ public class Plugin : IDalamudPlugin
 
     public static readonly HashSet<Tweak> Tweaks = [];
     internal TaskManager TaskManager;
-    internal NavmeshIPC Navmesh;
     internal AddonObserver AddonObserver;
+
+    internal Provider Provider;
+    internal NavmeshIPC Navmesh;
     internal AutoRetainerApi AutoRetainerAPI;
     internal LifestreamIPC Lifestream;
     internal DeliverooIPC Deliveroo;
     internal AutoRetainerIPC AutoRetainer;
-    internal Memory Memory = null!;
     internal bool UsingARPostProcess;
-    internal bool MemoryError;
+
+    internal Memory Memory = null!;
 
     public Plugin(IDalamudPluginInterface pluginInterface)
     {
@@ -57,22 +60,20 @@ public class Plugin : IDalamudPlugin
 
         EzCmd.Add(Command, OnCommand, $"Opens the {Name} menu");
         EzCmd.Add(LegacyCommand, OnCommand);
-        EzConfigGui.Init(new HaselWindow().Draw);
-        HaselWindow.SetWindowProperties();
+        EzConfigGui.Init(new HaselWindow().Draw, nameOverride: $"{Name} {VersionString}");
         EzConfigGui.WindowSystem.AddWindow(new DebugWindow());
         try
         {
-            MemoryError = false;
             Memory = new();
         }
         catch (Exception ex)
         {
-            MemoryError = true;
             Svc.Log.Error(ex, "Failed to initialize Memory");
         }
 
         AddonObserver = new();
         TaskManager = new();
+        Provider = new();
         Navmesh = new();
         AutoRetainerAPI = new();
         Lifestream = new();
@@ -126,10 +127,10 @@ public class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
-        if (args.StartsWith("d"))
-            EzConfigGui.WindowSystem.Windows.First(w => w is DebugWindow).IsOpen ^= true;
+        if (args.StartsWith('d'))
+            EzConfigGui.GetWindow<DebugWindow>()!.Toggle();
         else
-            EzConfigGui.Window.IsOpen = !EzConfigGui.Window.IsOpen;
+            EzConfigGui.Window.Toggle();
     }
 
     private void InitializeTweaks()

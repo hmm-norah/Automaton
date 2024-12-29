@@ -22,8 +22,6 @@ public unsafe class GettingTooAttached : Tweak<GettingTooAttachedConfiguration>
     public override string Name => "Getting Too Attached";
     public override string Description => "Loop through attaching and removing materia for the Getting Too Attached achievement. Feature currently under UI renovations, please use the button.";
 
-    private readonly float height;
-
     internal bool active = false;
 
     public override void Enable()
@@ -125,7 +123,7 @@ public unsafe class GettingTooAttached : Tweak<GettingTooAttachedConfiguration>
                 ModuleMessage("Unable to continue. No materia to meld.");
                 return false;
             }
-            else if (MemoryHelper.ReadSeStringNullTerminated(new nint(addon->AtkValues[289].String)).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)[2] == "0")
+            else if (MemoryHelper.ReadSeStringNullTerminated(new nint(addon->AtkValues[289].String)).ToString().Split([',', ' '], StringSplitOptions.RemoveEmptyEntries)[2] == "0")
             {
                 CancelLoop();
                 ModuleMessage("Unable to continue. First listed materia has too high ilvl requirements.");

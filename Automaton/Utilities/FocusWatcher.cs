@@ -7,7 +7,7 @@ public unsafe class FocusWatcher : IDisposable
 {
     public FocusWatcher() => Svc.Framework.Update += CheckAddonFocus;
 
-    public static event Action<Pointer<AtkUnitBase>> AddonFocusChanged;
+    public static event Action<Pointer<AtkUnitBase>> AddonFocusChanged = null!;
     public static void OnAddonFocusChange(Pointer<AtkUnitBase> atk)
     {
         LastFocusedAddon = atk != null ? atk.Value->NameString : string.Empty;

@@ -1,7 +1,6 @@
 ﻿using Automaton.Features;
 using Dalamud.Interface.Windowing;
 using ECommons.ImGuiMethods;
-using ECommons.Interop;
 using ECommons.SimpleGui;
 using ImGuiNET;
 
@@ -39,7 +38,7 @@ public class MousePositionOverlay : Window
     void DrawLineWorld(Vector3 a, Vector3 b, uint color, float thickness)
     {
         var result = GetAdjustedLine(a, b);
-        if (result.posA == null) return;
+        if (result.posA is null || result.posB is null) return;
         ImGui.GetWindowDrawList().PathLineTo(new Vector2(result.posA.Value.X, result.posA.Value.Y));
         ImGui.GetWindowDrawList().PathLineTo(new Vector2(result.posB.Value.X, result.posB.Value.Y));
         ImGui.GetWindowDrawList().PathStroke(color, ImDrawFlags.None, thickness);
@@ -47,8 +46,8 @@ public class MousePositionOverlay : Window
 
     (Vector2? posA, Vector2? posB) GetAdjustedLine(Vector3 pointA, Vector3 pointB)
     {
-        var resultA = Svc.GameGui.WorldToScreen(pointA, out Vector2 posA);
-        var resultB = Svc.GameGui.WorldToScreen(pointB, out Vector2 posB);
+        _ = Svc.GameGui.WorldToScreen(pointA, out var posA);
+        _ = Svc.GameGui.WorldToScreen(pointB, out var posB);
         //if (!resultA || !resultB) return default;
         return (posA, posB);
     }
@@ -56,16 +55,16 @@ public class MousePositionOverlay : Window
     public void DrawRingWorld(Vector3 position, float radius, uint color, float thickness)
     {
         var segments = 50;
-        int seg = segments / 2;
-        Vector2?[] elements = new Vector2?[segments];
-        for (int i = 0; i < segments; i++)
+        var seg = segments / 2;
+        var elements = new Vector2?[segments];
+        for (var i = 0; i < segments; i++)
         {
             Svc.GameGui.WorldToScreen(
                 new Vector3(position.X + radius * (float)Math.Sin(Math.PI / seg * i),
                 position.Y,
                 position.Z + radius * (float)Math.Cos(Math.PI / seg * i)
                 ),
-                out Vector2 pos);
+                out var pos);
             elements[i] = new Vector2(pos.X, pos.Y);
         }
         foreach (var pos in elements)

@@ -57,7 +57,7 @@ public class HuntRelayHelperConfiguration
     ];
 }
 
-[Tweak(outdated: true)]
+[Tweak]
 public class HuntRelayHelper : Tweak<HuntRelayHelperConfiguration>
 {
     public override string Name => "Hunt Relay Helper";
@@ -246,7 +246,7 @@ public class HuntRelayHelper : Tweak<HuntRelayHelperConfiguration>
             if (channel.GetAttribute<XivChatTypeInfoAttribute>()!.FancyName.StartsWith("Linkshell") && Player.CurrentWorld != Player.HomeWorld) continue;
             if (islocal && Player.Object.CurrentWorld.Value.RowId != payload.World.RowId && Config.OnlySendLocalHuntsToLocalChannels) continue;
 
-            TaskManager.EnqueueDelay(500);
+            //TaskManager.EnqueueDelay(500);
 #pragma warning disable CS0618 // Type or member is obsolete
             TaskManager.Enqueue(() =>
             {
@@ -271,6 +271,7 @@ public class HuntRelayHelper : Tweak<HuntRelayHelperConfiguration>
             switch (s)
             {
                 case "<flag>":
+                    // Hook PronounModule.Instance()->VirtualTable->ProcessString and decode the Utf8String to check the args here in case they change in the future
                     sb.BeginMacro(Lumina.Text.Payloads.MacroCode.Fixed)
                         .AppendIntExpression(200)
                         .AppendIntExpression(3)
@@ -279,6 +280,7 @@ public class HuntRelayHelper : Tweak<HuntRelayHelperConfiguration>
                         .AppendIntExpression(MapLink.RawX) // x -> (int)(MathF.Round(posX, 3, MidpointRounding.AwayFromZero) * 1000)
                         .AppendIntExpression(MapLink.RawY) // y
                         .AppendIntExpression(-30000) // z or -30000 for no z
+                        .AppendIntExpression(0) // PlaceName override if not 0
                         .EndMacro();
                     break;
                 case "<world>":

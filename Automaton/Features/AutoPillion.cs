@@ -2,7 +2,7 @@
 
 namespace Automaton.Features;
 
-[Tweak(HasHooks = true)]
+[Tweak]
 public class AutoPillion : Tweak
 {
     public override string Name => "Auto Pillion";

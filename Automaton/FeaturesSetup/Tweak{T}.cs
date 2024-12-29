@@ -128,7 +128,7 @@ public abstract class Tweak<T> : Tweak
     {
         var handler = methodInfo.CreateDelegate<IReadOnlyCommandInfo.HandlerDelegate>(this);
 
-        if (!(hooks && P.MemoryError) && Svc.Commands.AddHandler(command, new CommandInfo(handler) { HelpMessage = helpMessage }))
+        if (Svc.Commands.AddHandler(command, new CommandInfo(handler) { HelpMessage = helpMessage }))
         {
             Log($"Added CommandHandler for {command}");
         }

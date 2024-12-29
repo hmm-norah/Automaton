@@ -21,7 +21,6 @@ public abstract partial class Tweak : ITweak
         Outdated = CachedType.GetCustomAttribute<TweakAttribute>()?.Outdated ?? false;
         Disabled = CachedType.GetCustomAttribute<TweakAttribute>()?.Disabled ?? false;
         IsDebug = CachedType.GetCustomAttribute<TweakAttribute>()?.Debug ?? false;
-        HasHooks = CachedType.GetCustomAttribute<TweakAttribute>()?.HasHooks ?? false;
 
         TaskManager = new();
 
@@ -73,7 +72,6 @@ public abstract partial class Tweak : ITweak
     public abstract string Name { get; }
     public abstract string Description { get; }
     public bool IsDebug { get; }
-    public bool HasHooks { get; }
 
     public bool Outdated { get; protected set; }
     public bool Ready { get; protected set; }
@@ -122,11 +120,6 @@ public abstract partial class Tweak // Internal
     internal virtual void EnableInternal()
     {
         if (!Ready || Outdated || Disabled) return;
-        if (HasHooks && P.MemoryError)
-        {
-            ModuleMessage("Feature not enabled due to memory signature error. Wait for this to be fixed.");
-            return;
-        }
         if (Requirements.Any(r => !r.IsLoaded))
         {
             ModuleMessage("Feature not enabled due to missing dependencies. Please install them then re-enable this feature.");

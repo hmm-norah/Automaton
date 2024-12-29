@@ -1,4 +1,5 @@
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
 using ECommons.ImGuiMethods;
 using ECommons.SimpleGui;
 using ImGuiNET;
@@ -8,10 +9,21 @@ using System.Text.RegularExpressions;
 
 namespace Automaton.UI;
 
-public partial class HaselWindow
+public partial class HaselWindow : Window
 {
     // Style from HaselTweaks
     // https://github.com/Haselnussbomber/HaselTweaks
+    public HaselWindow() : base($"{Name} {VersionString}###{nameof(HaselWindow)}")
+    {
+        var width = SidebarWidth * 3 + ImGui.GetStyle().ItemSpacing.X + ImGui.GetStyle().FramePadding.X * 2;
+        Size = new(width, 600);
+        SizeConstraints = new() { MinimumSize = new(width, 600), MaximumSize = new(4096, 2160) };
+        SizeCondition = ImGuiCond.Always;
+        Flags |= ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
+        AllowClickthrough = false;
+        AllowPinning = false;
+    }
+
     private const uint SidebarWidth = 250;
     private const string LogoManifestResource = "Automaton.Assets.rat.png";
 
@@ -19,12 +31,7 @@ public partial class HaselWindow
     private Point _logoSize = new(789, 983);
     private const float _logoScale = 0.3f;
 
-    [GeneratedRegex("\\.0$")]
-    private static partial Regex VersionPatchZeroRegex();
-
     private Tweak? SelectedTweak => Tweaks.FirstOrDefault(t => t.Name == _selectedTweak);
-
-    public HaselWindow() { }
 
     public static void SetWindowProperties()
     {
@@ -46,7 +53,7 @@ public partial class HaselWindow
         EzConfigGui.Window.AllowPinning = false;
     }
 
-    public void Draw()
+    public override void Draw()
     {
         DrawSidebar();
         ImGui.SameLine();
@@ -166,12 +173,10 @@ public partial class HaselWindow
             ImGuiX.DrawLink("Ko-fi", "Ko-fi", "https://ko-fi.com/croizat");
 
             // version, bottom right
-            var version = GetType().Assembly.GetName().Version;
-            if (version != null)
+            if (VersionString.Length > 1)
             {
-                var versionString = "v" + VersionPatchZeroRegex().Replace(version.ToString(), "");
-                ImGui.SetCursorPos(cursorPos + contentAvail - ImGui.CalcTextSize(versionString));
-                ImGui.TextUnformatted(versionString);
+                ImGui.SetCursorPos(cursorPos + contentAvail - ImGui.CalcTextSize(VersionString));
+                ImGui.TextUnformatted(VersionString);
             }
 
             return;

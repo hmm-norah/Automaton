@@ -4,7 +4,9 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using PlayerController = Automaton.Utilities.Structs.PlayerController;
@@ -20,11 +22,13 @@ public static unsafe class PlayerEx
 
     public static bool Occupied => IsOccupied();
 
-    public static PlayerController* Controller => (PlayerController*)Svc.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 3C 01 75 1E 48 8D 0D");
+    public static PlayerController* Controller => (PlayerController*)Svc.SigScanner.GetStaticAddressFromSig(Memory.Signatures.PlayerController);
     public static bool HasPenalty => FFXIVClientStructs.FFXIV.Client.Game.UI.InstanceContent.Instance()->GetPenaltyRemainingInMinutes(0) > 0;
     public static bool InPvP => GameMain.IsInPvPInstance();
+    public static bool InFlightAllowedTerritory => GetRow<TerritoryType>(Svc.ClientState.TerritoryType)?.Unknown4 != 0;
+    public static bool AllowedToFly => PlayerState.Instance()->IsAetherCurrentZoneComplete(Svc.ClientState.TerritoryType);
     public static Vector3 Position { get => Svc.ClientState.LocalPlayer.Position; set => GameObject->SetPosition(value.X, value.Y, value.Z); }
-    public static float Speed { get => Controller->MoveControllerWalk.BaseMovementSpeed; set => Debug.SetSpeed(6 * value); }
+    public static float Speed { get => Controller->MoveControllerWalk.BaseMovementSpeed; set => Memory.SetSpeed(6 * value); }
     public static DGameObject Target { get => Svc.Targets.Target; set => Svc.Targets.Target = value; }
     public static bool IsTargetLocked => *(byte*)((nint)TargetSystem.Instance() + 309) == 1;
     public static bool IsCasting => Svc.ClientState.LocalPlayer.IsCasting;
@@ -75,5 +79,16 @@ public static unsafe class PlayerEx
                 return;
             }
         }
+    }
+
+    public static void ResetTimers()
+    {
+        var module = UIModule.Instance()->GetInputTimerModule();
+        module->AfkTimer = 0;
+        module->ContentInputTimer = 0;
+        module->InputTimer = 0;
+        module->Unk1C = 0;
+        if (Player.OnlineStatus == 17) // away from keyboard
+            Chat.Instance.SendMessage("/afk off"); // TODO: find a better way
     }
 }

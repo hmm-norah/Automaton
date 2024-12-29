@@ -15,7 +15,7 @@ public class AchievementTrackerConfiguration
     public bool AutoRemoveCompleted = false;
 }
 
-[Tweak(HasHooks = true)]
+[Tweak]
 public unsafe class AchievementTracker : Tweak<AchievementTrackerConfiguration>
 {
     public override string Name => "Achievement Tracker";
@@ -51,16 +51,17 @@ public unsafe class AchievementTracker : Tweak<AchievementTrackerConfiguration>
         public bool Completed => CurrentProgress != default && CurrentProgress >= MaxProgress;
     }
 
+    private readonly Memory.AchievementProgress AchievementProgress = new();
     public override void Enable()
     {
-        P.Memory.ReceiveAchievementProgressHook.Enable();
+        AchievementProgress.ReceiveAchievementProgressHook.Enable();
         Events.AchievementProgressUpdate += OnAchievementProgressUpdate;
         EzConfigGui.WindowSystem.AddWindow(new AchievementTrackerUI(this));
     }
 
     public override void Disable()
     {
-        P.Memory.ReceiveAchievementProgressHook.Disable();
+        AchievementProgress.ReceiveAchievementProgressHook.Disable();
         Events.AchievementProgressUpdate -= OnAchievementProgressUpdate;
         EzConfigGui.RemoveWindow<AchievementTrackerUI>();
     }

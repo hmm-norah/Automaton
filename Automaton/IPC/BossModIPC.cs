@@ -3,6 +3,7 @@
 namespace Automaton.IPC;
 
 #nullable disable
+#pragma warning disable CS8632
 public class BossModIPC
 {
     public const string Name = "BossMod";

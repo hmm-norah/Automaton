@@ -123,16 +123,14 @@ internal class DateWithDestiny : Tweak<DateWithDestinyConfiguration>
 
     private ushort nextFateID;
     private byte fateMaxLevel;
-    private ushort fateID;
+
     private ushort FateID
     {
-        get => fateID; set
+        get; set
         {
-            if (fateID != value)
-            {
+            if (field != value)
                 SyncFate(value);
-            }
-            fateID = value;
+            field = value;
         }
     }
 
@@ -281,7 +279,7 @@ internal class DateWithDestiny : Tweak<DateWithDestinyConfiguration>
                 return;
             }
 
-            if ((Config.FullAuto || Config.AutoFly) && Svc.Condition[ConditionFlag.Mounted] && !Svc.Condition[ConditionFlag.InFlight])
+            if ((Config.FullAuto || Config.AutoFly) && Svc.Condition[ConditionFlag.Mounted] && !Svc.Condition[ConditionFlag.InFlight] && PlayerEx.InFlightAllowedTerritory)
             {
                 ExecuteJump();
                 return;

@@ -2,22 +2,23 @@
 
 namespace Automaton.Features;
 
-[Tweak(debug: true, HasHooks = true)]
+[Tweak(debug: true)]
 internal class PacketFirewall : Tweak
 {
     public override string Name => "Packet Firewall";
     public override string Description => "Selectively enable sending and receiving server packets.";
 
+    private readonly Memory.PacketDispatcher PacketDispatcher = new();
     public override void Enable()
     {
-        P.Memory.PacketDispatcher_OnReceivePacketHook.Enable();
-        P.Memory.PacketDispatcher_OnSendPacketHook.Enable();
+        PacketDispatcher.PacketDispatcher_OnReceivePacketHook.Enable();
+        PacketDispatcher.PacketDispatcher_OnSendPacketHook.Enable();
     }
 
     public override void Disable()
     {
-        P.Memory.PacketDispatcher_OnReceivePacketHook.Disable();
-        P.Memory.PacketDispatcher_OnSendPacketHook.Disable();
+        PacketDispatcher.PacketDispatcher_OnReceivePacketHook.Disable();
+        PacketDispatcher.PacketDispatcher_OnSendPacketHook.Disable();
     }
 
     private int packet;
@@ -28,24 +29,24 @@ internal class PacketFirewall : Tweak
         if (ImGui.InputInt("Packet #", ref packet, 1, 10, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             if (sending)
-                P.Memory.DisallowedSentPackets.Add((uint)packet);
+                PacketDispatcher.DisallowedSentPackets.Add((uint)packet);
             else
-                P.Memory.DisallowedReceivedPackets.Add((uint)packet);
+                PacketDispatcher.DisallowedReceivedPackets.Add((uint)packet);
         }
 
         if (ImGui.Button("Block all sending"))
-            P.Memory.DisallowedSentPackets.AddRange(Enumerable.Range(0, 10000).Select(x => (uint)x));
+            PacketDispatcher.DisallowedSentPackets.AddRange(Enumerable.Range(0, 10000).Select(x => (uint)x));
         ImGui.SameLine();
         if (ImGui.Button("Block all receiving"))
-            P.Memory.DisallowedReceivedPackets.AddRange(Enumerable.Range(0, 10000).Select(x => (uint)x));
+            PacketDispatcher.DisallowedReceivedPackets.AddRange(Enumerable.Range(0, 10000).Select(x => (uint)x));
 
         if (ImGui.Button("Clear"))
         {
-            P.Memory.DisallowedSentPackets.Clear();
-            P.Memory.DisallowedReceivedPackets.Clear();
+            PacketDispatcher.DisallowedSentPackets.Clear();
+            PacketDispatcher.DisallowedReceivedPackets.Clear();
         }
 
-        ImGui.TextUnformatted($"Blocked Sending Packets: {string.Join(", ", P.Memory.DisallowedSentPackets)}");
-        ImGui.TextUnformatted($"Blocked Receiving Packets: {string.Join(", ", P.Memory.DisallowedReceivedPackets)}");
+        ImGui.TextUnformatted($"Blocked Sending Packets: {string.Join(", ", PacketDispatcher.DisallowedSentPackets)}");
+        ImGui.TextUnformatted($"Blocked Receiving Packets: {string.Join(", ", PacketDispatcher.DisallowedReceivedPackets)}");
     }
 }
